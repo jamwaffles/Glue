@@ -1,3 +1,11 @@
+/**
+ * jQuery Glue v0.0.1
+ *
+ * James Waples <jamwaffles@gmail.com>
+ *
+ * https://github.com/jamwaffles/Glue
+ **/
+
 // Stick to top/bottom of screen on scroll
 // .glue
 // .glue-container
