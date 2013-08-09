@@ -1,0 +1,13 @@
+{
+	"name": "Glue",
+	"version": "0.0.1",
+	"author": "James Waples <james@jamwaffles.co.uk>",
+	"description": "jQuery sticky element plugin",
+	"dependencies": {
+		"grunt": "0.4.x",
+		"grunt-contrib-uglify": "0.2.x"
+	},
+	"engines": {
+		"node": "0.1.x"
+	}
+}
