@@ -1,11 +1,3 @@
-/**
- * jQuery Glue v0.0.1
- *
- * James Waples <jamwaffles@gmail.com>
- *
- * https://github.com/jamwaffles/Glue
- **/
-
 // Stick to top/bottom of screen on scroll
 // .glue
 // .glue-container
@@ -26,31 +18,37 @@
 		style: true
 	}
 
-	function glue(el, options) {
-		if(el.hasClass('glue-fixed')) {
-			var element = el.next('.glue-clone');
+	function glue(target) {
+		var $el = target.$el;
+		var options = target.options;
+
+		if($el.hasClass('glue-fixed')) {
+			var $element = $el.next('.glue-clone');
 		} else {
-			var element = el;
+			var $element = $el;
 		}
 
-		var parent = element.closest('.glue-container').length ? el.closest('.glue-container') : $('body');
+		var element = $element[0];
+		var top = element.getBoundingClientRect().top;
 
-		var stuckTop = element.offset().top <= $(window).scrollTop() + options.offsetTop + parseInt(element.css('margin-top'), 10);
-		var stuckBottom = element.offset().top >= $(window).scrollTop() + $(window).height() - element.outerHeight(false) + 10;
+		var stuckTop = top <= 0;
+		var stuckBottom = top - document.documentElement.clientHeight > 0;
 
-		var left = el.offset().left;
+		var left = $el.offset().left;
 
 		if(stuckBottom || stuckTop) {
-			if(!el.next('.glue-clone').length) {
-				var clone = el.clone();
+			if(!$el.next('.glue-clone').length) {
+				var clone = $el.clone();
 
 				clone.addClass('glue-clone').css({
-					width: el.width(),
-					height: el.height()
+					width: $el.width(),
+					height: $el.height()
 				}).empty();
 
-				el.after(clone);
+				$el.after(clone);
 			}
+
+			target.stuck = true;
 		}
 
 		var fixedClass = 'glue-fixed' + (options.style ? ' glue-style' : '');
@@ -60,20 +58,22 @@
 		};
 
 		if(options.style) {
-			properties.width = parent.width();
+			properties.width = target.$container.width();
 		}
 
-		if(stuckTop && el.hasClass('glue-top')) {
+		if(stuckTop && target.stickToTop) {
 			properties.top = options.offsetTop;
 
-			el.css(properties).addClass(fixedClass);
-		} else if(stuckBottom && el.hasClass('glue-bottom')) {
+			$el.css(properties).addClass(fixedClass);
+		} else if(stuckBottom && target.stickToBottom) {
 			properties.bottom = 0;
 
-			el.css(properties).addClass(fixedClass);
-		} else {
-			el.removeClass('glue-fixed').css({ width: '', height: '' });
-			el.next('.glue-clone').remove();
+			$el.css(properties).addClass(fixedClass);
+		} else if(target.stuck === true) {
+			$el.removeClass('glue-fixed').css({ width: '', height: '' });
+			$el.next('.glue-clone').remove();
+
+			target.stuck = false;
 		}
 	}
 
@@ -82,18 +82,24 @@
 
 		return this.each(function() {
 			if($.inArray(this, glueTargets) == -1) {
-				this.glueOptions = options;
+				var target = {
+					$el: $(this),
+					$container: $(this).closest('.glue-container').length ? $(this).closest('.glue-container') : $('body'),
+					options: options,
+					stickToTop: $(this).hasClass('glue-top'),
+					stickToBottom: $(this).hasClass('glue-bottom')
+				};
 
-				glueTargets.push(this);
+				glueTargets.push(target);
 
-				glue($(this), options);
+				glue(target);
 			}
 		});
 	}
 
 	$(window).on('scroll.glue', function() {
-		$.each(glueTargets, function() {
-			glue($(this), this.glueOptions);
-		});
+		for(var i = 0; i < glueTargets.length; i++) {
+			glue(glueTargets[i]);
+		}
 	});
 }));
